@@ -231,7 +231,7 @@
     $soldto=mysqli_real_escape_string($con,$_POST["soldto"]);
     $tin=mysqli_real_escape_string($con,$_POST["tin"]);
     $address=mysqli_real_escape_string($con,$_POST["address"]);
-    $description=mysqli_real_escape_string($con,$_POST["description"]);
+    
         //VAT
     $total_sale=mysqli_real_escape_string($con,$_POST["total_sale"]);
     $vat=mysqli_real_escape_string($con,$_POST["vat"]);
@@ -241,11 +241,11 @@
     $model=mysqli_real_escape_string($con,$_POST["model"]);
     $unitprice=mysqli_real_escape_string($con,$_POST["unitprice"]);
     $totalprice=mysqli_real_escape_string($con,$_POST["totalprice"]);
-
+    $description=mysqli_real_escape_string($con,$_POST["description"]);
 
     // Prepare the first statement
-    $stmt = $con->prepare("INSERT INTO info (si_num, si_date, sold_to, tin, address, description, total_sale, vat, total_amount_payable) VALUES (?, ?, ?, ?,?,?,?,?,?)");
-    $stmt->bind_param("sssssssss", $sinumber, $sidate,$soldto,$tin, $address, $description,$total_sale,$vat,$total_amount_payable);
+    $stmt = $con->prepare("INSERT INTO info (si_num, si_date, sold_to, tin, address, total_sale, vat, total_amount_payable) VALUES ( ?, ?, ?,?,?,?,?,?)");
+    $stmt->bind_param("ssssssss", $sinumber, $sidate,$soldto,$tin, $address,$total_sale,$vat,$total_amount_payable);
     
     // Sanitize and format data
     // ... other data sanitization and formatting
@@ -255,8 +255,8 @@
         $infoKey = $con->insert_id;
 
         // Prepare the second statement
-        $stmt2 = $con->prepare("INSERT INTO perserial (model, serial, copies, unitprice, total_price, info_key) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt2->bind_param("ssssss", $model, $serial,$copies, $unitprice, $totalprice, $infoKey);
+        $stmt2 = $con->prepare("INSERT INTO perserial (model, serial, copies, unitprice, total_price, item_description, info_key) VALUES (?, ?, ?, ?, ?, ?,?)");
+        $stmt2->bind_param("sssssss", $model, $serial,$copies, $unitprice, $totalprice, $description, $infoKey);
         $stmt2->execute();
 
         echo "<div class='alert alert-success'>Invoice Added Successfully. <a href='print.php?id={$infoKey}' target='_BLANK'>Click </a> here to Print Invoice </div> ";
