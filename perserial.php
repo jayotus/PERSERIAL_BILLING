@@ -24,6 +24,7 @@
         padding: 0;
         font-family: "Poppins", sans-serif;
     }
+
     /* Designing button*/
     #addInput {
         padding: 8px 15px;
@@ -72,14 +73,14 @@
         justify-content: space-between;
     }
 
-    #quantity, #units, #unitprice, #totalprice, #serial, #model, #copies {
+    #quantity, #units, #unitprice, #totalprice, #serial, #model, #copies, #colortype{
         display: inline-block;
         vertical-align: middle;
         width: 120px;
     }
 
     #description {
-        width: 450px;
+        width: 470px;
         display: inline-block;
         vertical-align: middle;
     }
@@ -159,9 +160,10 @@
     }
 
 
-    #inline-block-quantity, #inline-block-totalprice, #inline-block-units, #inline-block-unitprice,#inline-block-model,#inline-block-serial,#inline-block-copies{
+    #inline-block-quantity, #inline-block-totalprice, #inline-block-units, #inline-block-unitprice,#inline-block-model,#inline-block-serial,#inline-block-copies,#inline-block-colortype{
         width: 120px;
     }
+
     #inline-block-description {
         width: 450px;
     }
@@ -169,6 +171,11 @@
     .bottom-part {
         margin-top: 50px;
     }
+
+    textarea {
+        resize: none;
+    }
+
 
     /* The Modal (background) */
     .modal {
@@ -215,6 +222,17 @@
     }
     </style>
 
+    <script>
+        // Disable form submission on pressing Enter
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelector('form').addEventListener('keydown', function(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();  // Prevent form submission on Enter key
+                }
+            });
+        });
+    </script>
+
 </head>
     <body>
          <!-- Trigger/Open The Modal -->
@@ -239,9 +257,18 @@
 
     $copies=mysqli_real_escape_string($con,$_POST["copies"]);
     $model=mysqli_real_escape_string($con,$_POST["model"]);
-    $unitprice=mysqli_real_escape_string($con,$_POST["unitprice"]);
-    $totalprice=mysqli_real_escape_string($con,$_POST["totalprice"]);
+
+    // $unitprice=mysqli_real_escape_string($con,$_POST["unitprice"]);
+    // $totalprice=mysqli_real_escape_string($con,$_POST["totalprice"]);
+
+    $unitprice = floatval(mysqli_real_escape_string($con, $_POST["unitprice"]));
+    $totalprice = floatval(mysqli_real_escape_string($con, $_POST["totalprice"]));
+
+
+
     $description=mysqli_real_escape_string($con,$_POST["description"]);
+    $colortype=mysqli_real_escape_string($con,$_POST["colortype"]);
+    $serial=mysqli_real_escape_string($con,$_POST["serial"]);
 
     // Prepare the first statement
     $stmt = $con->prepare("INSERT INTO info (si_num, si_date, sold_to, tin, address, total_sale, vat, total_amount_payable) VALUES ( ?, ?, ?,?,?,?,?,?)");
@@ -255,8 +282,8 @@
         $infoKey = $con->insert_id;
 
         // Prepare the second statement
-        $stmt2 = $con->prepare("INSERT INTO perserial (model, serial, copies, unitprice, total_price, item_description, info_key) VALUES (?, ?, ?, ?, ?, ?,?)");
-        $stmt2->bind_param("sssssss", $model, $serial,$copies, $unitprice, $totalprice, $description, $infoKey);
+        $stmt2 = $con->prepare("INSERT INTO perserial (model, serial, copies, unitprice, total_price, item_description, colortype, info_key) VALUES (?, ?, ?, ?, ?, ?, ?,?)");
+        $stmt2->bind_param("sssddsss", $model, $serial,$copies, $unitprice, $totalprice, $description, $colortype, $infoKey);
         $stmt2->execute();
 
         echo "<div class='alert alert-success'>Invoice Added Successfully. <a href='print.php?id={$infoKey}' target='_BLANK'>Click </a> here to Print Invoice </div> ";
@@ -268,7 +295,7 @@
          $stmt2->close();
 
             }
-           
+            $con->close();
             ?>
 
  
@@ -307,7 +334,7 @@
                                 
                                 <input type="text" id="description" name="description">
                                 
-                               
+                                <!-- <textarea id="description" name="description" rows="4" cols="50"> </textarea> -->
                                 
                             </div>
                         </div>
@@ -325,6 +352,11 @@
                                 <input class="serial" type="number" id="serial" name='serial'>
                             </div>
 
+
+                            <div id="inline-block-colortype">
+                                <label for="colortype">Color Type</label>
+                                <input class="colortype" type="text" id="colortype" name='colortype'>
+                            </div>
 
                             <div id="inline-block-copies">
                                 <label for="copies">Copies Made</label>
@@ -412,10 +444,12 @@
 
         totalInput.value = totalPrice.toFixed(2);
     }
+    
 
     // Add event listeners to quantity and unit price inputs
     copiesInput.addEventListener("input", updateValues);
     unitpriceInput.addEventListener("input", updateValues);
+
 
 </script>
 
